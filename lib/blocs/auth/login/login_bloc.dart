@@ -1,41 +1,44 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
-
 import '../auth_repository.dart';
 import '../form_submission_status.dart';
-
-part 'login_event.dart';
+import 'login_event.dart';
 
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  final AuthRepository? authRepository;
+  final AuthRepository? authRepo;
 
-  LoginBloc({this.authRepository}) : super(LoginState());
+  LoginBloc({this.authRepo}) : super(LoginState());
 
   @override
   Stream<LoginState> mapEventToState(LoginEvent event) async* {
-    // Username updated
     if (event is LoginCallSignChanged) {
-      yield state.copyWith(callSign: event.callSign);
-
-      // Password updated
+      yield* _mapLoginCallSignChangedToState(event);
     } else if (event is LoginPasswordChanged) {
-      yield state.copyWith(password: event.password);
-
-      // Form submitted
+      yield* _mapLoginPasswordChangedToState(event);
     } else if (event is LoginSubmitted) {
-      yield state.copyWith(formStatus: FormSubmitting());
+      yield* _mapLoginSubmittedToState(event);
+    }
+  }
 
-      try {
-        await authRepository!.login();
-        yield state.copyWith(formStatus: SubmissionSuccess());
-      } on Exception catch (e) {
-        // TODO
-        yield state.copyWith(formStatus: SubmissionFailed(e));
-      }
+  Stream<LoginState> _mapLoginCallSignChangedToState(
+      LoginCallSignChanged event) async* {
+    yield state.copyWith(callSign: event.callSign);
+  }
+
+  Stream<LoginState> _mapLoginPasswordChangedToState(
+      LoginPasswordChanged event) async* {
+    yield state.copyWith(password: event.password);
+  }
+
+  Stream<LoginState> _mapLoginSubmittedToState(LoginSubmitted event) async* {
+    yield state.copyWith(formStatus: FormSubmitting());
+
+    try {
+      await authRepo!.login();
+      yield state.copyWith(formStatus: SubmissionSuccess());
+    } on Exception catch (e) {
+      yield state.copyWith(formStatus: SubmissionFailed(e));
     }
   }
 }

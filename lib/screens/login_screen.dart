@@ -1,63 +1,65 @@
-import 'dart:js';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:login_using_bloc/blocs/auth/auth_repository.dart';
+import 'package:login_using_bloc/blocs/auth/form_submission_status.dart';
 
 import '../blocs/auth/login/login_bloc.dart';
+import '../blocs/auth/login/login_event.dart';
 
 class LoginScreen extends StatelessWidget {
-  LoginScreen({Key? key}) : super(key: key);
-
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocProvider(
-        create: (context) =>
-            LoginBloc(authRepository: context.read<AuthRepository>()),
+        create: (context) => LoginBloc(
+          authRepo: context.read<AuthRepository>(),
+        ),
         child: _loginForm(),
       ),
     );
   }
 
   Widget _loginForm() {
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 30),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _callSign(),
-            const SizedBox(
-              height: 20,
+    return BlocListener<LoginBloc, LoginState>(
+        listener: (context, state) {
+          final formStatus = state.formStatus;
+          if (formStatus is SubmissionFailed) {
+            _showSnackBar(context, formStatus.exception.toString());
+          }
+        },
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _usernameField(),
+                SizedBox(height: 20,),
+                _passwordField(),
+                SizedBox(height: 20,),
+                _loginButton(),
+                SizedBox(height: 20,),
+              ],
             ),
-            _passwordField(),
-            const SizedBox(
-              height: 20,
-            ),
-            _loginButton(),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
-  Widget _callSign() {
+  Widget _usernameField() {
     return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
       return TextFormField(
         decoration: InputDecoration(
           icon: Icon(Icons.person),
-          hintText: 'Call-Sign',
+          hintText: 'Username',
         ),
-        keyboardType: TextInputType.numberWithOptions(),
         validator: (value) =>
-            state.isValidCallSign ? null : 'Call-Sign too short',
-        onChanged: (value) => context
-            .read<LoginBloc>()
-            .add(LoginCallSignChanged(callSign: value)),
+            state.isValidCallSign ? null : 'Username is too short',
+        onChanged: (value) => context.read<LoginBloc>().add(
+              LoginCallSignChanged(callSign: value),
+            ),
       );
     });
   }
@@ -71,23 +73,31 @@ class LoginScreen extends StatelessWidget {
           hintText: 'Password',
         ),
         validator: (value) =>
-            state.isValidPassword ? null : 'Password too short',
-        onChanged: (value) => context
-            .read<LoginBloc>()
-            .add(LoginPasswordChanged(password: value)),
+            state.isValidPassword ? null : 'Password is too short',
+        onChanged: (value) => context.read<LoginBloc>().add(
+              LoginPasswordChanged(password: value),
+            ),
       );
     });
   }
 
   Widget _loginButton() {
-    return BlocBuilder<LoginBloc, LoginState>(
-      builder: (context, state) {
-        return ElevatedButton(
-          onPressed: () {},
-          child: Text('Login'),
-        );
-      },
-    );
+    return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
+      return state.formStatus is FormSubmitting
+          ? CircularProgressIndicator()
+          : ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  context.read<LoginBloc>().add(LoginSubmitted());
+                }
+              },
+              child: Text('Login'),
+            );
+    });
+  }
 
+  void _showSnackBar(BuildContext context, String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

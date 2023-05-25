@@ -2,10 +2,10 @@ part of 'login_bloc.dart';
 
 class LoginState {
   final String callSign;
-  bool get isValidCallSign  => callSign.length > 3;
+  bool get isValidCallSign => callSign.length > 3;
 
   final String password;
-  bool get isValidPassword  => password.length > 6;
+  bool get isValidPassword => password.length > 6;
 
   final FormSubmissionStatus formStatus;
 
@@ -21,8 +21,8 @@ class LoginState {
     FormSubmissionStatus? formStatus,
   }) {
     return LoginState(
-      callSign : callSign ?? this.callSign,
-      password : password ?? this.password,
+      callSign: callSign ?? this.callSign,
+      password: password ?? this.password,
       formStatus: formStatus ?? this.formStatus,
     );
   }

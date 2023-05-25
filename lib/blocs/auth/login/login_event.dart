@@ -1,20 +1,15 @@
-part of 'login_bloc.dart';
-
-@immutable
 abstract class LoginEvent {}
 
 class LoginCallSignChanged extends LoginEvent {
-  final String callSign;
+  final String? callSign;
 
-  LoginCallSignChanged({required this.callSign});
+  LoginCallSignChanged({this.callSign});
 }
 
 class LoginPasswordChanged extends LoginEvent {
-  final String password;
+  final String? password;
 
-  LoginPasswordChanged({required this.password});
+  LoginPasswordChanged({this.password});
 }
 
-class LoginSubmitted extends LoginEvent{
-
-}
+class LoginSubmitted extends LoginEvent {}
