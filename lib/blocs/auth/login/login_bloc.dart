@@ -1,44 +1,38 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bloc/bloc.dart';
 import '../auth_repository.dart';
 import '../form_submission_status.dart';
 import 'login_event.dart';
-
-part 'login_state.dart';
+import 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final AuthRepository? authRepo;
 
-  LoginBloc({this.authRepo}) : super(LoginState());
+  LoginBloc({this.authRepo}) : super(LoginState()) {
+    on<LoginEvent>((event, emit) async {
+      await mapEventToState(event, emit);
+    });
+  }
 
-  @override
-  Stream<LoginState> mapEventToState(LoginEvent event) async* {
+  Future mapEventToState(LoginEvent event, Emitter<LoginState> emit) async {
+    // Username updated
     if (event is LoginCallSignChanged) {
-      yield* _mapLoginCallSignChangedToState(event);
+      emit(state.copyWith(callSign: event.callSign));
+
+      // Password updated
     } else if (event is LoginPasswordChanged) {
-      yield* _mapLoginPasswordChangedToState(event);
+      emit(state.copyWith(password: event.password));
+
+      // Form submitted
     } else if (event is LoginSubmitted) {
-      yield* _mapLoginSubmittedToState(event);
-    }
-  }
+      emit(state.copyWith(formStatus: FormSubmitting()));
 
-  Stream<LoginState> _mapLoginCallSignChangedToState(
-      LoginCallSignChanged event) async* {
-    yield state.copyWith(callSign: event.callSign);
-  }
-
-  Stream<LoginState> _mapLoginPasswordChangedToState(
-      LoginPasswordChanged event) async* {
-    yield state.copyWith(password: event.password);
-  }
-
-  Stream<LoginState> _mapLoginSubmittedToState(LoginSubmitted event) async* {
-    yield state.copyWith(formStatus: FormSubmitting());
-
-    try {
-      await authRepo!.login();
-      yield state.copyWith(formStatus: SubmissionSuccess());
-    } on Exception catch (e) {
-      yield state.copyWith(formStatus: SubmissionFailed(e));
+      try {
+        await authRepo?.login();
+        emit(state.copyWith(formStatus: SubmissionSuccess()));
+      } on Exception catch (e)  {
+        emit(state.copyWith(formStatus: SubmissionFailed(e)));
+      }
     }
   }
 }

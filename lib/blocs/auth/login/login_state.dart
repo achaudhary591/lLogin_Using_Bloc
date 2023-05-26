@@ -1,6 +1,8 @@
-part of 'login_bloc.dart';
+import 'package:equatable/equatable.dart';
 
-class LoginState {
+import '../form_submission_status.dart';
+
+class LoginState extends Equatable{
   final String callSign;
   bool get isValidCallSign => callSign.length > 3;
 
@@ -26,4 +28,8 @@ class LoginState {
       formStatus: formStatus ?? this.formStatus,
     );
   }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [callSign, password, formStatus];
 }

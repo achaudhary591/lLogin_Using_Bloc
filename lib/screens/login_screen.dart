@@ -5,6 +5,7 @@ import 'package:login_using_bloc/blocs/auth/form_submission_status.dart';
 
 import '../blocs/auth/login/login_bloc.dart';
 import '../blocs/auth/login/login_event.dart';
+import '../blocs/auth/login/login_state.dart';
 
 class LoginScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -32,16 +33,16 @@ class LoginScreen extends StatelessWidget {
         child: Form(
           key: _formKey,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _usernameField(),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
                 _passwordField(),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
                 _loginButton(),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
               ],
             ),
           ),
@@ -51,7 +52,8 @@ class LoginScreen extends StatelessWidget {
   Widget _usernameField() {
     return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
       return TextFormField(
-        decoration: InputDecoration(
+        keyboardType: TextInputType.number,
+        decoration: const InputDecoration(
           icon: Icon(Icons.person),
           hintText: 'Username',
         ),
@@ -68,7 +70,7 @@ class LoginScreen extends StatelessWidget {
     return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
       return TextFormField(
         obscureText: true,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           icon: Icon(Icons.security),
           hintText: 'Password',
         ),
@@ -84,14 +86,14 @@ class LoginScreen extends StatelessWidget {
   Widget _loginButton() {
     return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
       return state.formStatus is FormSubmitting
-          ? CircularProgressIndicator()
+          ? const CircularProgressIndicator()
           : ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   context.read<LoginBloc>().add(LoginSubmitted());
                 }
               },
-              child: Text('Login'),
+              child: const Text('Login'),
             );
     });
   }
